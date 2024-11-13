@@ -1,10 +1,22 @@
 # axios-json-logger
 
-`axios-json-logger` is a simple utility package that adds JSON logging to any Axios instance. It intercepts requests, responses, and errors to log them in a readable, pretty-printed JSON format. This package is useful for debugging HTTP requests and responses, especially in complex applications.
+A simple wrapper for Axios to log requests and responses in a pretty-printed JSON format. This package helps you debug and inspect both the request and the response for each HTTP call made via Axios.
+
+## How it Works
+
+### How It Works
+
+The `axios-json-logger` package works by intercepting both Axios requests and responses. It does this by adding an Axios request interceptor and a response interceptor to the provided Axios instance. The request interceptor is used to log the details of the request before it is sent to the server, and the response interceptor logs the details of the response once it is received.
+
+When a request is made, the interceptor captures key information such as the HTTP method (`GET`, `POST`, etc.), the target URL, headers, and the request body (if any). This data is logged in clean, formatted JSON. Additionally, a unique `X-Request-ID` header is added to each request automatically. This header is designed to track requests and make it easier to trace the flow of requests and responses, and ensure the request sand response are printed together - especially useful when debugging multiple API calls. 
+
+The `X-Request-ID` value is typically generated based on the current timestamp, ensuring it is unique for each request.
+
+When the response is received, the interceptor captures the response's status code, status text, body, and headers, which are then logged alongside the request information. This way, both the request and response details are output together, providing a full picture of the HTTP interaction. The method ensures that users can debug and inspect API calls by having both request and response information output together.
 
 ## Installation
 
-Install `axios-json-logger` using npm:
+To install the `axios-json-logger` package, use npm:
 
 ```bash
 npm install axios-json-logger
@@ -12,96 +24,138 @@ npm install axios-json-logger
 
 ## Usage
 
-To use `axios-json-logger`, import the `addAxiosJsonLogger` function and apply it to an Axios instance.
+1. **Import Axios** and **axios-json-logger** into your project.
+2. **Create an Axios instance**.
+3. **Call `addAxiosJsonLogger`** with the Axios instance to automatically log each request and its corresponding response.
 
 ### Example
 
-```typescript
-import axios from 'axios';
-import { addAxiosJsonLogger } from 'axios-json-logger';
+```javascript
+// index.js
 
-// Create an Axios instance with your custom configuration
+const axios = require('axios');
+const { addAxiosJsonLogger } = require('axios-json-logger');
+
+// Create an Axios instance
 const axiosInstance = axios.create({
-  baseURL: 'https://jsonplaceholder.typicode.com',
+  baseURL: 'https://jsonplaceholder.typicode.com', // Example API
   timeout: 5000,
 });
 
-// Add JSON logging to the Axios instance
+// Enable JSON logging for this Axios instance
 addAxiosJsonLogger(axiosInstance);
 
-// Make requests using the Axios instance
-axiosInstance.get('/posts')
-  .then(response => console.log('Data fetched successfully:', response.data))
-  .catch(error => console.error('Error fetching data:', error));
+// Make an API request
+axiosInstance.get('/posts/1')
+  .then(response => {
+    console.log('Request was successful!');
+  })
+  .catch(error => {
+    console.error('Request failed:', error.message);
+  });
+
+// Make another API request that will trigger an error (404)
+axiosInstance.get('/nonexistent-endpoint')
+  .catch(error => {
+    console.error('Request failed:', error.message);
+  });
 ```
 
-### Expected Output
+### What Gets Logged
 
-Each request, response, and error will be logged in the console in JSON format, as shown below.
+- **Request**:
+  - Method (`GET`, `POST`, etc.)
+  - URL
+  - Request headers
+  - Request body (if available)
 
-#### Request Log
-```json
-Request: {
-  "url": "/posts",
-  "method": "get",
-  "headers": { ... },
-  "data": null,
-  "params": {}
-}
+- **Response**:
+  - Status code (`200`, `404`, `500`, etc.)
+  - Status message (`OK`, `Not Found`, etc.)
+  - Response body
+  - Response headers
+
+### Example Output
+
+For a **successful request**:
+
 ```
-
-#### Response Log
-```json
-Response: {
-  "url": "/posts",
-  "status": 200,
-  "statusText": "OK",
-  "headers": { ... },
-  "data": [
-    {
+===== GET /posts/1 =====
+{
+  "request": {
+    "method": "get",
+    "url": "/posts/1",
+    "headers": {
+      "User-Agent": "axios/0.21.1",
+      "X-Request-ID": "1637364974175"
+    },
+    "data": null
+  },
+  "response": {
+    "status": 200,
+    "statusText": "OK",
+    "data": {
       "userId": 1,
       "id": 1,
-      "title": "Sample Post",
-      "body": "Sample body content"
+      "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+      "body": "quia et suscipit\nsuscipit..."
     },
-    ...
-  ]
-}
-```
-
-#### Error Log (if any error occurs)
-```json
-Response Error: {
-  "message": "Request failed with status code 404",
-  "response": {
-    "url": "/invalid-endpoint",
-    "status": 404,
-    "statusText": "Not Found",
-    "headers": { ... },
-    "data": { ... }
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    }
   }
 }
+
+============================================================
 ```
 
-## API
+For an **error response (404)**:
 
-### `addAxiosJsonLogger(axiosInstance: AxiosInstance): AxiosInstance`
+```
+===== GET /nonexistent-endpoint =====
+{
+  "request": {
+    "method": "get",
+    "url": "/nonexistent-endpoint",
+    "headers": {
+      "User-Agent": "axios/0.21.1",
+      "X-Request-ID": "1637364974176"
+    },
+    "data": null
+  },
+  "response": {
+    "status": 404,
+    "statusText": "Not Found",
+    "data": {
+      "message": "Not Found"
+    },
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    }
+  }
+}
 
-Adds JSON logging interceptors for requests, responses, and errors to the provided Axios instance.
-
-- **Parameters**:
-  - `axiosInstance` (`AxiosInstance`): An instance of Axios to which JSON logging will be added.
-
-- **Returns**:
-  - The same `axiosInstance` with logging interceptors attached.
-
-## TypeScript Support
-
-This package is fully written in TypeScript, so type definitions are included out of the box.
-
-## License
-
-MIT
+============================================================
 ```
 
-This README provides instructions on installing, using, and understanding the output of the `axios-json-logger` package, along with example usage to demonstrate its functionality.
+### Configuration
+
+You can pass a custom Axios instance to the logger. This allows you to use different Axios configurations for different parts of your application.
+
+Example:
+
+```javascript
+const axiosInstance1 = axios.create({ baseURL: 'https://api.example.com' });
+const axiosInstance2 = axios.create({ baseURL: 'https://api.another.com' });
+
+addAxiosJsonLogger(axiosInstance1);
+addAxiosJsonLogger(axiosInstance2);
+```
+
+### License
+
+This package is licensed under the **MIT** license. 
+
+---
+
+Feel free to open an issue or pull request if you have any suggestions or improvements!

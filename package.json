@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/webbdan/axioslogger.git"
+    "url": "git+https://github.com/webbdan/axios-json-logger.git"
   },
   "keywords": [
     "axios",
@@ -20,9 +20,9 @@
   "author": "Dan Webb",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/webbdan/axioslogger/issues"
+    "url": "https://github.com/webbdan/axios-json-logger/issues"
   },
-  "homepage": "https://github.com/webbdan/axioslogger#readme",
+  "homepage": "https://github.com/webbdan/axios-json-logger#readme",
   "dependencies": {
     "axios": "^1.7.7"
   },

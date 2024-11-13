@@ -5,54 +5,40 @@ import { AxiosInstance, AxiosResponse, AxiosError, InternalAxiosRequestConfig } 
  * @param axiosInstance - The Axios instance to wrap.
  * @returns The same Axios instance with logging interceptors.
  */
-export function addAxiosJsonLogger(axiosInstance: AxiosInstance): AxiosInstance {
-  // Intercept requests
-  axiosInstance.interceptors.request.use(
-    (request: InternalAxiosRequestConfig) => {
-      console.log('Request:', JSON.stringify({
-        url: request.url,
-        method: request.method,
-        headers: request.headers,
-        data: request.data,
-        params: request.params,
-      }, null, 2));
+export function addAxiosJsonLogger(axiosInstance: AxiosInstance): void {
+    axiosInstance.interceptors.request.use((request: InternalAxiosRequestConfig) => {
+      request.headers['X-Request-ID'] = Date.now();  
       return request;
-    },
-    (error: AxiosError) => {
-      console.error('Request Error:', JSON.stringify({
-        message: error.message,
-        config: error.config,
-      }, null, 2));
-      return Promise.reject(error);
-    }
-  );
-
-  // Intercept responses
-  axiosInstance.interceptors.response.use(
-    (response: AxiosResponse<any>) => {
-      console.log('Response:', JSON.stringify({
-        url: response.config.url,
-        status: response.status,
-        statusText: response.statusText,
-        headers: response.headers,
-        data: response.data,
-      }, null, 2));
+    });
+  
+    axiosInstance.interceptors.response.use((response: AxiosResponse) => {
+      logRequestResponse(response.config, response);
       return response;
-    },
-    (error: AxiosError) => {
-      console.error('Response Error:', JSON.stringify({
-        message: error.message,
-        response: error.response ? {
-          url: error.response.config.url,
-          status: error.response.status,
-          statusText: error.response.statusText,
-          headers: error.response.headers,
-          data: error.response.data,
-        } : null,
-      }, null, 2));
+    }, (error) => {
+      if (error.response) {
+        logRequestResponse(error.response.config, error.response);
+      } else {
+        console.error(`Error: ${error.message}`);
+      }
       return Promise.reject(error);
-    }
-  );
-
-  return axiosInstance;
-}
+    });
+  }
+  
+  function logRequestResponse(requestConfig: InternalAxiosRequestConfig, responseData: any) {
+    console.log(`\n===== ${requestConfig.method?.toUpperCase()} ${requestConfig.url} =====`);
+    console.log(JSON.stringify({
+      request: {
+        method: requestConfig.method,
+        url: requestConfig.url,
+        headers: requestConfig.headers,
+        data: requestConfig.data
+      },
+      response: {
+        status: responseData.status,
+        statusText: responseData.statusText,
+        data: responseData.data,
+        headers: responseData.headers
+      }
+    }, null, 2));
+    console.log('\n============================================================\n');
+  }
