@@ -49,8 +49,6 @@ export function addAxiosJsonLogger(axiosInstance: AxiosInstance, config = { logO
             trace.name = `${traceReport.method.toUpperCase()}: ${traceReport.url}`
             trace.report = traceReport
 
-            let logOutput = false
-
             if (!config.logOnlyOnError || (config.expectError && (response.status >= 200 && response.status < 400))) {
               trace.report?.log();
             }
