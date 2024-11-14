@@ -4,13 +4,11 @@ A simple wrapper for Axios to log requests and responses in a pretty-printed JSO
 
 ## How it Works
 
-### How It Works
-
 The `axios-json-logger` package works by intercepting both Axios requests and responses. It does this by adding an Axios request interceptor and a response interceptor to the provided Axios instance. The request interceptor is used to log the details of the request before it is sent to the server, and the response interceptor logs the details of the response once it is received.
 
-When a request is made, the interceptor captures key information such as the HTTP method (`GET`, `POST`, etc.), the target URL, headers, and the request body (if any). This data is logged in clean, formatted JSON. Additionally, a unique `X-Request-ID` header is added to each request automatically. This header is designed to track requests and make it easier to trace the flow of requests and responses, and ensure the request sand response are printed together - especially useful when debugging multiple API calls. 
+When a request is made, the interceptor captures key information such as the HTTP method (`GET`, `POST`, etc.), the target URL, headers, and the request body (if any). This data is logged in clean, formatted JSON. Additionally, a unique `X-Request-Tracking-ID` header is added to each request automatically. This header is designed to track requests and make it easier to trace the flow of requests and responses, and ensure the request sand response are printed together - especially useful when debugging multiple API calls. 
 
-The `X-Request-ID` value is typically generated based on the current timestamp, ensuring it is unique for each request.
+The `X-Request-Tracking-ID` value is generated based on the current timestamp, ensuring it is unique for each request.
 
 When the response is received, the interceptor captures the response's status code, status text, body, and headers, which are then logged alongside the request information. This way, both the request and response details are output together, providing a full picture of the HTTP interaction. The method ensures that users can debug and inspect API calls by having both request and response information output together.
 
